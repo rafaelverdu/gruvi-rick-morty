@@ -6,6 +6,8 @@ import { CharacterFilter } from "../../components/CharacterFilter";
 import { charactersStyles } from "../../styles/characters";
 import { useCharacters } from "../../hooks/useCharacters";
 import { Character, CharactersQueryParams } from "../../interface/api";
+import { ErrorScreen } from '../../components/ErrorScreen';
+import { LoadingScreen } from '../../components/LoadingScreen';
 
 export default function CharactersScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -77,22 +79,13 @@ export default function CharactersScreen() {
   const renderContent = () => {
     if (error) {
       return (
-        <View style={charactersStyles.errorContainer}>
-          <Ionicons name="alert-circle" size={64} color="#ff6b6b" />
-          <Text style={charactersStyles.errorTitle}>Error Loading Characters</Text>
-          <Text style={charactersStyles.errorText}>
-            {error instanceof Error ? error.message : 'Something went wrong'}
-          </Text>
-        </View>
+        <ErrorScreen error={error} />
       );
     }
 
     if (isLoading && characters.length === 0) {
       return (
-        <View style={charactersStyles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00ff00" />
-          <Text style={charactersStyles.loadingText}>Loading characters...</Text>
-        </View>
+        <LoadingScreen />
       );
     }
 

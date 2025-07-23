@@ -1,10 +1,11 @@
 import React from 'react';
-import { Text, View, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
+import { Text, View, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { EpisodesList } from "../../components/episodes";
 import { favoritesStyles } from "../../styles/favorites";
 import { useFavoriteEpisodes, useClearAllFavorites, useUpdateEpisodeScore } from "../../hooks/useFavorites";
 import { Episode } from '../../interface/api';
+import { LoadingScreen } from '../../components/LoadingScreen';
 
 export default function FavoritesScreen() {
   const { data: episodes = [], isLoading, favoriteIds = [], favoriteData = [] } = useFavoriteEpisodes();
@@ -48,10 +49,7 @@ export default function FavoritesScreen() {
   if (isLoading) {
     return (
       <View style={favoritesStyles.container}>
-        <View style={favoritesStyles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00ff00" />
-          <Text style={favoritesStyles.loadingText}>Loading favorites...</Text>
-        </View>
+        <LoadingScreen />
       </View>
     );
   }

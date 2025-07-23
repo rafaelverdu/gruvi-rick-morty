@@ -6,6 +6,8 @@ import { EpisodeFilter } from "../../components/EpisodeFilter";
 import { episodesStyles } from "../../styles/episodes";
 import { useEpisodes } from "../../hooks/useEpisodes";
 import { Episode, EpisodesQueryParams } from "../../interface/api";
+import { ErrorScreen } from '../../components/ErrorScreen';
+import { LoadingScreen } from '../../components/LoadingScreen';
 
 export default function EpisodesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,22 +59,13 @@ export default function EpisodesScreen() {
   const renderContent = () => {
     if (error) {
       return (
-        <View style={episodesStyles.errorContainer}>
-          <Ionicons name="alert-circle" size={64} color="#ff6b6b" />
-          <Text style={episodesStyles.errorTitle}>Error Loading Episodes</Text>
-          <Text style={episodesStyles.errorText}>
-            {error instanceof Error ? error.message : 'Something went wrong'}
-          </Text>
-        </View>
+        <ErrorScreen error={error} />
       );
     }
 
     if (isLoading && episodes.length === 0) {
       return (
-        <View style={episodesStyles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00ff00" />
-          <Text style={episodesStyles.loadingText}>Loading episodes...</Text>
-        </View>
+        <LoadingScreen />
       );
     }
 
