@@ -29,8 +29,8 @@ export const useInfiniteEpisodes = (params?: Omit<EpisodesQueryParams, 'page'>) 
     queryFn: ({ pageParam = 1 }) => 
       EpisodesUseCase.getAllEpisodes({ ...params, page: pageParam }),
     initialPageParam: 1,
-    getNextPageParam: (lastPage: ApiResponse<Episode>) => {
-      return lastPage.info.next ? lastPage.info.pages + 1 : undefined;
+    getNextPageParam: (lastPage: ApiResponse<Episode>, allPages, lastPageParam) => {
+      return lastPage.info.next ? lastPageParam + 1 : undefined;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
