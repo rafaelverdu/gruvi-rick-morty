@@ -9,9 +9,11 @@ export const favoriteKeys = {
   details: () => [...favoriteKeys.all, 'detail'] as const,
   detail: (id: number) => [...favoriteKeys.details(), id] as const,
   count: () => [...favoriteKeys.all, 'count'] as const,
+  scores: () => [...favoriteKeys.all, 'scores'] as const,
+  score: (id: number) => [...favoriteKeys.scores(), id] as const,
 };
 
-// Get favorite episode IDs
+// Get favorite episode IDs with scores
 export const useFavoriteEpisodeIds = () => {
   return useQuery({
     queryKey: favoriteKeys.lists(),
@@ -23,11 +25,12 @@ export const useFavoriteEpisodeIds = () => {
 
 // Get favorite episodes with full data
 export const useFavoriteEpisodes = () => {
-  const { data: favoriteIds, isLoading: isLoadingIds } = useFavoriteEpisodeIds();
+  const { data: favoriteData, isLoading: isLoadingIds } = useFavoriteEpisodeIds();
   
-  const { data: episodes, isLoading: isLoadingEpisodes } = useEpisodesByIds(
-    favoriteIds || []
-  );
+  // Extract just the episode IDs for the episodes query
+  const favoriteIds = favoriteData?.map(item => item.episode_id) || [];
+  
+  const { data: episodes, isLoading: isLoadingEpisodes } = useEpisodesByIds(favoriteIds);
 
   // If there are no favorite IDs, return empty array
   // If there are favorite IDs but episodes is undefined (query disabled), return empty array
@@ -38,7 +41,19 @@ export const useFavoriteEpisodes = () => {
     data: safeEpisodes,
     isLoading: isLoadingIds || (favoriteIds && favoriteIds.length > 0 && isLoadingEpisodes),
     favoriteIds: safeFavoriteIds,
+    favoriteData, // Include the full data with scores
   };
+};
+
+// Get episode score
+export const useEpisodeScore = (episodeId: number) => {
+  return useQuery({
+    queryKey: favoriteKeys.score(episodeId),
+    queryFn: () => databaseService.getEpisodeScore(episodeId),
+    enabled: !!episodeId,
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 2 * 60 * 1000, // 2 minutes
+  });
 };
 
 // Check if episode is favorite
@@ -83,6 +98,24 @@ export const useAddToFavorites = () => {
   });
 };
 
+// Update episode score mutation
+export const useUpdateEpisodeScore = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ episodeId, score }: { episodeId: number; score: number }) => 
+      databaseService.updateEpisodeScore(episodeId, score),
+    onSuccess: (_, { episodeId }) => {
+      // Invalidate and refetch relevant queries
+      queryClient.invalidateQueries({ queryKey: favoriteKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: favoriteKeys.score(episodeId) });
+    },
+    onError: (error, { episodeId }) => {
+      console.error(`Failed to update score for episode ${episodeId}:`, error);
+    },
+  });
+};
+
 // Remove from favorites mutation
 export const useRemoveFromFavorites = () => {
   const queryClient = useQueryClient();
@@ -94,6 +127,7 @@ export const useRemoveFromFavorites = () => {
       queryClient.invalidateQueries({ queryKey: favoriteKeys.lists() });
       queryClient.invalidateQueries({ queryKey: favoriteKeys.count() });
       queryClient.invalidateQueries({ queryKey: favoriteKeys.detail(episodeId) });
+      queryClient.invalidateQueries({ queryKey: favoriteKeys.score(episodeId) });
       
       // Optimistically update the isFavorite query
       queryClient.setQueryData(favoriteKeys.detail(episodeId), false);

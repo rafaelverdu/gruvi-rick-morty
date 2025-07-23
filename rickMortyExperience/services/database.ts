@@ -10,6 +10,7 @@ const FAVORITES_TABLE = 'favorite_episodes';
 interface FavoriteEpisode {
   id: number;
   episode_id: number;
+  score: number | null;
   created_at: string;
 }
 
@@ -26,6 +27,7 @@ export class DatabaseService {
     try {
       this.db = await SQLite.openDatabaseAsync(DATABASE_NAME);
       await this.createTables();
+      await this.runMigrations();
       console.log('Database initialized successfully');
     } catch (error) {
       console.error('Error initializing database:', error);
@@ -50,6 +52,40 @@ export class DatabaseService {
     await this.db.execAsync(createTableSQL);
   }
 
+  // Run database migrations
+  private async runMigrations(): Promise<void> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      // Check if score column exists
+      const checkColumnSQL = `
+        SELECT COUNT(*) as count 
+        FROM pragma_table_info('${FAVORITES_TABLE}') 
+        WHERE name = 'score'
+      `;
+      
+      const result = await this.db.getAllAsync(checkColumnSQL) as CountResult[];
+      const scoreColumnExists = result[0]?.count > 0;
+
+      // Add score column if it doesn't exist
+      if (!scoreColumnExists) {
+        console.log('Adding score column to favorites table...');
+        const addColumnSQL = `
+          ALTER TABLE ${FAVORITES_TABLE} 
+          ADD COLUMN score INTEGER CHECK (score >= 1 AND score <= 5)
+        `;
+        
+        await this.db.execAsync(addColumnSQL);
+        console.log('Score column added successfully');
+      }
+    } catch (error) {
+      console.error('Error running migrations:', error);
+      throw error;
+    }
+  }
+
   // Add episode to favorites
   async addToFavorites(episodeId: number): Promise<void> {
     if (!this.db) {
@@ -67,6 +103,52 @@ export class DatabaseService {
     } catch (error) {
       console.error('Error adding episode to favorites:', error);
       throw error;
+    }
+  }
+
+  // Update episode score
+  async updateEpisodeScore(episodeId: number, score: number): Promise<void> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    if (score < 1 || score > 5) {
+      throw new Error('Score must be between 1 and 5');
+    }
+
+    try {
+      const updateSQL = `
+        UPDATE ${FAVORITES_TABLE}
+        SET score = ${score}
+        WHERE episode_id = ${episodeId}
+      `;
+      
+      await this.db.execAsync(updateSQL);
+      console.log(`Episode ${episodeId} score updated to ${score}`);
+    } catch (error) {
+      console.error('Error updating episode score:', error);
+      throw error;
+    }
+  }
+
+  // Get episode score
+  async getEpisodeScore(episodeId: number): Promise<number | null> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      const selectSQL = `
+        SELECT score
+        FROM ${FAVORITES_TABLE}
+        WHERE episode_id = ${episodeId}
+      `;
+      
+      const result = await this.db.getAllAsync(selectSQL) as { score: number | null }[];
+      return result[0]?.score || null;
+    } catch (error) {
+      console.error('Error getting episode score:', error);
+      return null;
     }
   }
 
@@ -90,7 +172,7 @@ export class DatabaseService {
     }
   }
 
-  // Check if episode is in favorites
+  // Check if episode is favorite
   async isFavorite(episodeId: number): Promise<boolean> {
     if (!this.db) {
       throw new Error('Database not initialized');
@@ -111,21 +193,21 @@ export class DatabaseService {
     }
   }
 
-  // Get all favorite episode IDs
-  async getFavoriteEpisodeIds(): Promise<number[]> {
+  // Get all favorite episode IDs with scores
+  async getFavoriteEpisodeIds(): Promise<{ episode_id: number; score: number | null }[]> {
     if (!this.db) {
       throw new Error('Database not initialized');
     }
 
     try {
       const selectSQL = `
-        SELECT episode_id
+        SELECT episode_id, score
         FROM ${FAVORITES_TABLE}
         ORDER BY created_at DESC
       `;
       
-      const result = await this.db.getAllAsync(selectSQL) as { episode_id: number }[];
-      return result.map(row => row.episode_id);
+      const result = await this.db.getAllAsync(selectSQL) as { episode_id: number; score: number | null }[];
+      return result;
     } catch (error) {
       console.error('Error getting favorite episode IDs:', error);
       return [];
@@ -140,7 +222,7 @@ export class DatabaseService {
 
     try {
       const selectSQL = `
-        SELECT id, episode_id, created_at
+        SELECT id, episode_id, score, created_at
         FROM ${FAVORITES_TABLE}
         ORDER BY created_at DESC
       `;

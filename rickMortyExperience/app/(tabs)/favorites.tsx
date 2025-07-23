@@ -3,18 +3,29 @@ import { Text, View, ScrollView, ActivityIndicator, TouchableOpacity } from "rea
 import { Ionicons } from "@expo/vector-icons";
 import { EpisodesList } from "../../components/episodes";
 import { favoritesStyles } from "../../styles/favorites";
-import { useFavoriteEpisodes, useClearAllFavorites } from "../../hooks/useFavorites";
+import { useFavoriteEpisodes, useClearAllFavorites, useUpdateEpisodeScore } from "../../hooks/useFavorites";
 import { Episode } from '../../interface/api';
 
 export default function FavoritesScreen() {
-  const { data: episodes, isLoading, favoriteIds } = useFavoriteEpisodes();
+  const { data: episodes = [], isLoading, favoriteIds = [], favoriteData = [] } = useFavoriteEpisodes();
   const clearAllMutation = useClearAllFavorites();
+  const updateScoreMutation = useUpdateEpisodeScore();
 
   // Ensure we always have arrays
   const safeEpisodes = Array.isArray(episodes) ? episodes : [];
   const safeFavoriteIds = Array.isArray(favoriteIds) ? favoriteIds : [];
+  const safeFavoriteData = Array.isArray(favoriteData) ? favoriteData : [];
 
   const handleClearAll = () => clearAllMutation.mutate();
+
+  const handleRatingChange = (episodeId: number, score: number) => {
+    updateScoreMutation.mutate({ episodeId, score });
+  };
+
+  const getEpisodeScore = (episodeId: number): number | null => {
+    const favoriteItem = safeFavoriteData.find(item => item.episode_id === episodeId);
+    return favoriteItem?.score || null;
+  };
 
   const renderHeader = () => (
     <View style={favoritesStyles.header}>
@@ -71,6 +82,10 @@ export default function FavoritesScreen() {
             key={episode.id}
             episode={episode}
             showFavoriteButton={true}
+            showRating={true}
+            onRatingChange={handleRatingChange}
+            currentScore={getEpisodeScore(episode.id)}
+            isRatingLoading={updateScoreMutation.isPending}
           />
         ))}
       </ScrollView>
