@@ -28,7 +28,7 @@ export const useFavoriteEpisodes = () => {
   const { data: favoriteData, isLoading: isLoadingIds } = useFavoriteEpisodeIds();
   
   // Extract just the episode IDs for the episodes query
-  const favoriteIds = favoriteData?.map(item => item.episode_id) || [];
+  const favoriteIds = favoriteData?.map((item: { episode_id: number }) => item.episode_id) || [];
   
   const { data: episodes, isLoading: isLoadingEpisodes } = useEpisodesByIds(favoriteIds);
 

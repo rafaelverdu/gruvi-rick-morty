@@ -1,30 +1,36 @@
 import { Tabs } from 'expo-router';
-
-import Ionicons from '@expo/vector-icons/Ionicons';
-
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
     <Tabs
-  screenOptions={{
-    tabBarActiveTintColor: '#ffd33d',
-    headerStyle: {
-      backgroundColor: '#25292e',
-    },
-    headerShadowVisible: false,
-    headerTintColor: '#fff',
-    tabBarStyle: {
-      backgroundColor: '#25292e',
-    },
-  }}
->
-
+      screenOptions={{
+        tabBarActiveTintColor: '#00ff00',
+        tabBarInactiveTintColor: '#666666',
+        tabBarStyle: {
+          backgroundColor: '#1a1a1a',
+          borderTopColor: '#333333',
+        },
+        headerStyle: {
+          backgroundColor: '#1a1a1a',
+        },
+        headerTintColor: '#ffffff',
+      }}>
       <Tabs.Screen
         name="episodes"
         options={{
           title: 'Episodes',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'tv-sharp' : 'tv-outline'} color={color} size={24} />
+            <Ionicons name={focused ? 'tv' : 'tv-outline'} color={color} size={24} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="characters"
+        options={{
+          title: 'Characters',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'people' : 'people-outline'} color={color} size={24} />
           ),
         }}
       />
@@ -33,7 +39,7 @@ export default function TabLayout() {
         options={{
           title: 'Favorites',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'heart-sharp' : 'heart-outline'} color={color} size={24}/>
+            <Ionicons name={focused ? 'heart' : 'heart-outline'} color={color} size={24} />
           ),
         }}
       />
