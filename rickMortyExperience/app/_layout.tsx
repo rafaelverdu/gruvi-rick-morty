@@ -1,5 +1,7 @@
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { databaseService } from '../services/database';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -11,6 +13,24 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
+  useEffect(() => {
+    // Initialize database when app starts
+    const initDatabase = async () => {
+      try {
+        await databaseService.init();
+      } catch (error) {
+        console.error('Failed to initialize database:', error);
+      }
+    };
+
+    initDatabase();
+
+    // Cleanup on unmount
+    return () => {
+      databaseService.close();
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Stack>

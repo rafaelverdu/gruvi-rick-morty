@@ -5,4 +5,7 @@ export * from './useCharacters';
 export * from './useLocations';
 
 // Episodes hooks
-export * from './useEpisodes'; 
+export * from './useEpisodes';
+
+// Favorites hooks
+export * from './useFavorites'; 

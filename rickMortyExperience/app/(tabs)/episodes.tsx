@@ -104,7 +104,7 @@ export default function EpisodesScreen() {
             </Text>
           </View>
         ) : (
-          filteredEpisodes.map((episode) => (
+          filteredEpisodes?.map((episode: Episode) => (
             <EpisodesList key={episode.id} episode={episode} />
           ))
         )}
