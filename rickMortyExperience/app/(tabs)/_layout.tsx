@@ -11,10 +11,7 @@ export default function TabLayout() {
           backgroundColor: '#1a1a1a',
           borderTopColor: '#333333',
         },
-        headerStyle: {
-          backgroundColor: '#1a1a1a',
-        },
-        headerTintColor: '#ffffff',
+        headerShown: false,
       }}>
       <Tabs.Screen
         name="episodes"

@@ -3,14 +3,19 @@ import { Platform } from 'react-native';
 // Platform-specific database service
 let databaseService: any;
 
-if (Platform.OS === 'web') {
-  // Web platform - use localStorage
-  const { databaseService: webDatabaseService } = require('./database.web');
-  databaseService = webDatabaseService;
-} else {
-  // Mobile platform - use SQLite
-  const { databaseService: nativeDatabaseService } = require('./database.native');
-  databaseService = nativeDatabaseService;
+async function initializeDatabase() {
+  if (Platform.OS === 'web') {
+    // Web platform - use localStorage
+    const { databaseService: webDatabaseService } = await import('./database.web');
+    databaseService = webDatabaseService;
+  } else {
+    // Mobile platform - use SQLite
+    const { databaseService: nativeDatabaseService } = await import('./database.native');
+    databaseService = nativeDatabaseService;
+  }
 }
+
+// Initialize immediately
+initializeDatabase();
 
 export { databaseService }; 

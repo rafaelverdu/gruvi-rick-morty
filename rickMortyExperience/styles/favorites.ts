@@ -4,6 +4,7 @@ export const favoritesStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1a1a1a",
+    paddingTop: 50, // Safe area padding for status bar
   },
   scrollView: {
     flex: 1,
@@ -68,7 +69,7 @@ export const favoritesStyles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderLeftWidth: 4,
-    borderLeftColor: "#ff6b6b",
+    borderLeftColor: "#00ff00",
   },
   episodeHeader: {
     flexDirection: "row",

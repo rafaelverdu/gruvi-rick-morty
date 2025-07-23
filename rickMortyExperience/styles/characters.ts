@@ -4,6 +4,7 @@ export const charactersStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1a1a1a",
+    paddingTop: 50, // Safe area padding for status bar
   },
   scrollView: {
     flex: 1,
